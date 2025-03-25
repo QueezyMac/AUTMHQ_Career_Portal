@@ -6,12 +6,11 @@
 
 # Set up the OpenAI API key
 import openai
-import requests
 from bs4 import BeautifulSoup
+import os
 
-openai.api_key = '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'
-api_key = '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'
-API_KEY = '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'
+api_key = os.getenv("api_key")
+openai.api_key = api_key
 
 
 # In[5]:
@@ -23,22 +22,21 @@ from bs4 import BeautifulSoup
 import os
 import csv
 
-# RSS Feed URL
-rss_feed = "https://www.austincityjobs.org/postings/search.atom?utf8=%E2%9C%93&query=&query_v0_posted_at_date=day&commit=Search"
-
 # Create a directory to save the job posts if it doesn't exist
 output_directory = "Job Posts by URL"
+ # RSS Feed URL
+rss_feed = "https://www.austincityjobs.org/postings/all_jobs.atom"
+
 if not os.path.exists(output_directory):
     os.makedirs(output_directory)
     print(f"Folder path created for: {output_directory}")
-    
-output_directory = "Job Posts by URL"
-input_file = os.path.join(output_directory, 'ALL_JOBS.csv')
 
-# Delete the existing ALL_JOBS.csv file if it exists
-if os.path.exists(input_file):
-    os.remove(input_file)
-    print(f"Previous file deleted for: {input_file}")
+# Delete all the existing files in the "Job Posts by URL" folder besides the ALL_JOBS_SUMMARY.csv
+else:
+    for file in os.listdir(output_directory):
+        if(file != "ALL_JOBS_SUMMARY.csv"):
+            os.remove(os.path.join(output_directory, file))
+            print(f"Previous file deleted for: {file}")
 
 def extract_data_from_text(content, file_number):
     # Extract the URL from the first line and then remove it
@@ -80,6 +78,7 @@ def extract_data_from_text(content, file_number):
     extracted_data["Job_Description"] = f"Duties, Functions and Responsibilities:\n{extracted_data['Duties_Functions_and_Responsibilities']}\n\nKnowledge, Skills and Abilities:\n{extracted_data['Knowledge_Skills_and_Abilities']}"
 
     return extracted_data
+
 
 # Fetch and process entries from the RSS Feed
 d = feedparser.parse(rss_feed)
@@ -220,13 +219,13 @@ def prompt_openai(description):
         {"role": "user", "content": f"Intake the job description, and write a concise and informative 20-word job summary for potential candidates based on the INPUT. End in a period with no additional words.:\n\n{trimmed_description}"}
     ]
     
-    response = openai.ChatCompletion.create(
-      model="gpt-3.5-turbo-0613",
+    response = openai.chat.completions.create(
+      model="gpt-4o-mini",
       messages=messages
     )
     
     # Extract the assistant's message from the response
-    assistant_message = response['choices'][0]['message']['content']
+    assistant_message = response.choices[0].message.content
     
     # Return a 20-word summary
     return ' '.join(assistant_message.split()[:80])  # Adjust to 80 based off 3-4 tokens per word
@@ -237,6 +236,8 @@ def generate_summaries():
     csv_path = os.path.join(folder_path, 'ALL_JOBS.csv')
     df = pd.read_csv(csv_path, encoding='utf-8-sig')  # Use the specified encoding
 
+    summary_csv_path = os.path.join(folder_path, 'ALL_JOBS_Summary.csv')
+
     # Ensure 'Job_AI_Summary' column exists, if not, create it
     if 'Job_AI_Summary' not in df.columns:
         df['Job_AI_Summary'] = ""
@@ -244,14 +245,36 @@ def generate_summaries():
     print("Job_AI_Summary\n")
 
     # Loop through the Job Descriptions and update the Job_AI_Summary column
-    for index, row in df.iterrows():
-        summary = prompt_openai(row['Job_Description'])
-        df.at[index, 'Job_AI_Summary'] = summary
-        print(f"CSV {row['CSV']} : {summary}\n")
+    if(os.path.exists(summary_csv_path)):
+        df_summary = pd.read_csv(summary_csv_path)
+        for index, row in df.iterrows():
+            # ChatGPT only generates a summary if the job description was updated or a new job was posted
+            if(not df_summary.loc[df_summary['Job_Requisition_Number'] == row['Job_Requisition_Number'],
+                              'Job_Description'].empty):
+                if(df_summary.loc[df_summary['Job_Requisition_Number'] == row['Job_Requisition_Number'],
+                                'Job_Description'].item() == row['Job_Description']):
+                    summary = df_summary.loc[df_summary['Job_Requisition_Number'] == row['Job_Requisition_Number'],
+                                'Job_AI_Summary'].item()
+                    print(f"CSV {row['CSV']} already generated")
+                else:
+                    summary = prompt_openai(row['Job_Description'])
+            else:
+                summary = prompt_openai(row['Job_Description'])
+            df.at[index, 'Job_AI_Summary'] = summary
+            print(f"CSV {row['CSV']} : {summary}\n")
 
-    output_path = os.path.join(folder_path, 'ALL_JOBS_SUMMARY.csv')
-    df.to_csv(output_path, index=False, encoding='utf-8-sig')  # Use the specified encoding
-    print(f"New CSV exported to {output_path}")
+        output_path = os.path.join(folder_path, 'ALL_JOBS_SUMMARY.csv')
+        df.to_csv(output_path, index=False, encoding='utf-8-sig')  # Use the specified encoding
+        print(f"New CSV exported to {output_path}")
+    else:
+        for index, row in df.iterrows():
+            summary = prompt_openai(row['Job_Description'])
+            df.at[index, 'Job_AI_Summary'] = summary
+            print(f"CSV {row['CSV']} : {summary}\n")
+
+        output_path = os.path.join(folder_path, 'ALL_JOBS_SUMMARY.csv')
+        df.to_csv(output_path, index=False, encoding='utf-8-sig')  # Use the specified encoding
+        print(f"New CSV exported to {output_path}")
 
 # Call the generate_summaries function
 generate_summaries()
@@ -333,7 +356,6 @@ print(f"CSV saved to {output_file}")
 
 import pandas as pd
 import os
-from datetime import timedelta
 
 # Define input and output directories and files
 input_directory = "Job Posts by URL"
@@ -351,17 +373,14 @@ if 'Job_Close_Date' not in df.columns:
 # Attempt to convert 'Job_Close_Date' to datetime, coerce errors into NaT
 df['Job_Close_Date'] = pd.to_datetime(df['Job_Close_Date'], errors='coerce')
 
-# Handle NaT values by replacing them with a default date or dropping them
-# Replace NaT with the current date
-default_date = pd.to_datetime('today')
-df['Job_Close_Date'].fillna(default_date, inplace=True)
+# Handle NaT values by replacing them with a blank
+df['Job_Close_Date'].fillna("", inplace=True)
 
-# Calculate 'Job_Open_Date' by subtracting 21 days from 'Job_Close_Date'
-df['Job_Open_Date'] = df['Job_Close_Date'] - timedelta(days=21)
+# Job open date is unavailable as it is not on their website
+df['Job_Open_Date'] = ""
 
 # Format 'Job_Close_Date' and 'Job_Open_Date' as date strings in YYYY-MM-DD format
-df['Job_Close_Date'] = df['Job_Close_Date'].dt.strftime('%Y-%m-%d')
-df['Job_Open_Date'] = df['Job_Open_Date'].dt.strftime('%Y-%m-%d')
+df['Job_Close_Date'] = df['Job_Close_Date'].dt.strftime('%Y-%m-%d').fillna("")
 
 # Define a function to calculate the Salary based on the Pay Range
 def calculate_salary(pay_range):
@@ -423,13 +442,11 @@ if 'Job_Close_Date' not in df.columns:
 # Attempt to convert 'Job_Close_Date' to datetime, coerce errors into NaT
 df['Job_Close_Date'] = pd.to_datetime(df['Job_Close_Date'], errors='coerce')
 
-# Handle NaT values by replacing them with a default date or dropping them
-# Replace NaT with the current date
-default_date = pd.to_datetime('today')
-df['Job_Close_Date'].fillna(default_date, inplace=True)
+# Handle NaT values by replacing them with a blank
+df['Job_Close_Date'].fillna("", inplace=True)
 
-# Calculate 'Job_Open_Date' by subtracting 21 days from 'Job_Close_Date'
-df['Job_Open_Date'] = df['Job_Close_Date'] - timedelta(days=21)
+# Job Open Date is unavailable as City of Austin does not show the posting date on their website
+df['Job_Open_Date'] = ""
 
 # Define a function to calculate the Salary based on the Pay Range
 def calculate_salary(pay_range):
@@ -531,9 +548,8 @@ df_output["Qualifications"] = df_input["Qualifications_2"]
 df_output["Position Description"] = df_input["Job_Description_2"]
 df_output["Expected Salary"] = df_input["Salary"]
 
-# Explicitly convert 'Job_Open_Date' and 'Job_Close_Date' to dates in YYYY-MM-DD format
+# Explicitly convert 'Job_Close_Date' to dates in YYYY-MM-DD format
 df_output["Job Close Date"] = pd.to_datetime(df_input["Job_Close_Date"]).dt.date
-df_output["Job Open Date"] = pd.to_datetime(df_input["Job_Open_Date"]).dt.date
 
 # Save the output DataFrame with all the headers to the specified output file
 df_output.to_csv(output_file, index=False, encoding='utf-8-sig')
