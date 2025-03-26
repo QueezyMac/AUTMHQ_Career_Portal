@@ -21,6 +21,7 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import os
 import csv
+import re
 
 # Create a directory to save the job posts if it doesn't exist
 output_directory = "Job Posts by URL"
@@ -77,6 +78,40 @@ def extract_data_from_text(content, file_number):
     extracted_data["Qualifications"] = f"Minimum Qualification:\n{extracted_data['Minimum_Qualifications']}\n\nPreferred Qualifications:\n{extracted_data['Preferred_Qualifications']}"
     extracted_data["Job_Description"] = f"Duties, Functions and Responsibilities:\n{extracted_data['Duties_Functions_and_Responsibilities']}\n\nKnowledge, Skills and Abilities:\n{extracted_data['Knowledge_Skills_and_Abilities']}"
 
+    content = content.upper()
+    if("NOTES TO APPLICANTS" in re.sub(r"\s+"," ",extracted_data["Pay_Range"].upper())):
+        if("SLARY" in content):
+            start_index = content.find("SLARY")
+        elif("SALARLY" in content):
+            start_index = content.find("SALARLY")
+        else:
+            start_index = content.find("SALARY")
+        end_index = content.find("PAY RANGE")
+        salary_text = content[start_index:end_index].strip()
+        salary_text = salary_text[:salary_text.find("\n")]
+        salary_text = re.sub(r"\s+"," ",salary_text)
+
+        if(salary_text.startswith("SALARY RANGE :")):
+            start_index = salary_text.find("SALARY RANGE :")+len("SALARY RANGE :")
+            extracted_data["Pay_Range"] = salary_text[start_index:].strip()
+        elif(salary_text.startswith("SALARLY RANGES :")):
+            start_index = salary_text.find("SALARLY RANGES :")+len("SALARLY RANGES :")
+            extracted_data["Pay_Range"] = salary_text[start_index:].strip()
+        elif(salary_text.startswith("SALARY RANGE:")):
+            start_index = salary_text.find("SALARY RANGE:")+len("SALARY RANGE:")
+            extracted_data["Pay_Range"] = salary_text[start_index:].strip()
+        elif(salary_text.startswith("SALARY RANGES:")):
+            start_index = salary_text.find("SALARY RANGES:")+len("SALARY RANGES:")
+            extracted_data["Pay_Range"] = salary_text[start_index:].strip()
+        elif(salary_text.startswith("SALARY RANGES :")):
+            start_index = salary_text.find("SALARY RANGES :")+len("SALARY RANGES :")
+            extracted_data["Pay_Range"] = salary_text[start_index:].strip()
+        elif(salary_text.startswith("SLARY RANGES :")):
+            start_index = salary_text.find("SLARY RANGES :")+len("SLARY RANGES :")
+            extracted_data["Pay_Range"] = salary_text[start_index:].strip()
+        elif(salary_text.startswith("SALARY:")):
+            start_index = salary_text.find("SALARY:")+len("SALARY:")
+            extracted_data["Pay_Range"] = salary_text[start_index:].strip()
     return extracted_data
 
 
@@ -352,7 +387,7 @@ print(f"CSV saved to {output_file}")
 # In[7]:
 
 
-#TEST
+# PYTHON Salary Calculation &  & DATE Calculation 2024.02.13  Addition of markers: '-'
 
 import pandas as pd
 import os
@@ -382,23 +417,61 @@ df['Job_Open_Date'] = ""
 # Format 'Job_Close_Date' and 'Job_Open_Date' as date strings in YYYY-MM-DD format
 df['Job_Close_Date'] = df['Job_Close_Date'].dt.strftime('%Y-%m-%d').fillna("")
 
+def is_float(string):
+    try:
+        float(string)
+        return(True)
+    except ValueError:
+        return(False)
+    
+def is_int(string):
+    try:
+        int(string)
+        return(True)
+    except ValueError:
+        return(False)
+
 # Define a function to calculate the Salary based on the Pay Range
 def calculate_salary(pay_range):
     # Check if pay_range is NaN, if so, return "DOE"
     if pd.isna(pay_range):
-        return "DOE"
+        return "DOE","DOE"
     
-    # Extract minimum and maximum values from the pay range
+    # Extract values from the pay range
     try:
-        min_pay, max_pay = [float(val.replace("$", "").replace("–", "").strip()) for val in pay_range.split() if "$" in val]
-        annual_low = min_pay * 2080
-        annual_high = max_pay * 2080
-        return "${:,.2f} - ${:,.2f} per year".format(annual_low, annual_high)
-    except:
-        return "DOE"
+        # Input can be in UNPAID, per year, or per hour, so get everything to per hour first or if it is unpaid just return 0
+        # for hourly pay rate and salary
+        pay_range = pay_range.replace("-", " - ").replace("/HOUR", " per hour")
+        pay_range = re.sub(r" {2,}", " ",pay_range)
+        if(pay_range == "UNPAID"):
+            return "${:,.2f} per hour".format(0), "${:,.2f} per year".format(0)
+        elif(("per year" in pay_range) or ("annually" in pay_range)):
+            pay_list = [int(val.replace("$", "").replace(",","").strip()) for val in pay_range.split()
+                                if (("$" in val) or (is_int(val)))][:2]
+            pay_list = [salary/2080 for salary in pay_list]
+        else:
+            pay_list = [float(val.replace("$", "").strip()) for val in pay_range.split() 
+                                if (("$" in val) or (is_float(val) and len(val)==5))][:2]
+        
+        # Sometimes the pay is just a single number and not a range, so these if statements allow the pay to be extracted correctly
+        if(len(pay_list)==2):
+            min_pay,max_pay = pay_list
+            annual_low = min_pay * 2080
+            annual_high = max_pay * 2080
+            return "${:,.2f} - ${:,.2f} per hour".format(min_pay, max_pay), "${:,.2f} - ${:,.2f} per year".format(annual_low, annual_high)
+        elif(len(pay_list)==1):
+            pay = pay_list[0]
+            annual_pay = pay * 2080
+            return "${:,.2f} per hour".format(pay), "${:,.2f} per year".format(annual_pay)
+        else:
+            return "DOE","DOE"
+    except Exception as e:
+        print(e)
+        return "DOE","DOE"
 
 # Apply the calculate_salary function to the Pay Range column to create the Salary column
-df['Salary'] = df['Pay_Range'].apply(calculate_salary)
+for (index,data) in df.iterrows():
+    df.at[index,'Pay_Range'], df.at[index,'Salary'] = calculate_salary(data['Pay_Range'])
 
 # Save the updated DataFrame to a CSV file
 df.to_csv(output_file, index=False, encoding='utf-8-sig')
@@ -417,70 +490,6 @@ print(df[['Job_Close_Date', 'Job_Open_Date']])
 
 
 # In[8]:
-
-
-# PYTHON Salary Calculation &  & DATE Calculation 2024.02.13  Addition of markers: '-'
-
-
-import pandas as pd
-import os
-from datetime import timedelta
-
-# Define input and output directories and files
-input_directory = "Job Posts by URL"
-output_directory = "Job Posts by URL"
-input_file = os.path.join(input_directory, 'ALL_JOBS_SUMMARY_Merged.csv')
-output_file = os.path.join(output_directory, 'ALL_JOBS_SUMMARY_Merged_Salary.csv')
-
-# Load the CSV file into a DataFrame
-df = pd.read_csv(input_file, encoding='utf-8-sig')
-
-# Check if 'Job_Close_Date' column exists, if not, raise an error
-if 'Job_Close_Date' not in df.columns:
-    raise ValueError("The 'Job_Close_Date' column is missing from the CSV file.")
-
-# Attempt to convert 'Job_Close_Date' to datetime, coerce errors into NaT
-df['Job_Close_Date'] = pd.to_datetime(df['Job_Close_Date'], errors='coerce')
-
-# Handle NaT values by replacing them with a blank
-df['Job_Close_Date'].fillna("", inplace=True)
-
-# Job Open Date is unavailable as City of Austin does not show the posting date on their website
-df['Job_Open_Date'] = ""
-
-# Define a function to calculate the Salary based on the Pay Range
-def calculate_salary(pay_range):
-    # Check if pay_range is NaN, if so, return "DOE"
-    if pd.isna(pay_range):
-        return "DOE"
-    
-    # Extract minimum and maximum values from the pay range
-    try:
-        min_pay, max_pay = [float(val.replace("$", "").replace("–", "").strip()) for val in pay_range.split() if "$" in val]
-        annual_low = min_pay * 2080
-        annual_high = max_pay * 2080
-        return "${:,.2f} - ${:,.2f} per year".format(annual_low, annual_high)
-    except:
-        return "DOE"
-
-# Apply the calculate_salary function to the Pay Range column to create the Salary column
-df['Salary'] = df['Pay_Range'].apply(calculate_salary)
-
-# Save the updated DataFrame to a CSV file
-df.to_csv(output_file, index=False, encoding='utf-8-sig')
-
-# Output the message indicating successful save and print the 'Job_Close_Date' and 'Job_Open_Date' columns
-print(f"CSV saved to {output_file}")
-print(df[['Job_Close_Date', 'Job_Open_Date']])
-
-
-# In[ ]:
-
-
-
-
-
-# In[9]:
 
 
 import pandas as pd
