@@ -1,0 +1,30 @@
+URL,CSV,Job Title,Location,Date posted,Job number,Work site,Travel,Role type,Profession,Discipline,Employment type,Overview,Qualifications,Responsibilities
+https://jobs.careers.microsoft.com/global/en/job/1814740/Senior-Software-Engineer,'003,Senior Software Engineer,"Austin, Texas, United States+ 4 more locations","Mar 24, 2025",1814740,Up to 100% work from home,0-25 %,Individual Contributor,Software Engineering,Software Engineering,Full-Time,"Are you looking for an opportunity to build software and systems for some of the biggest data centers that exist in the world? The Azure Networking team is responsible for designing and building the software defined network infrastructure that powers millions of servers around the globe for Azure, Bing and other Microsoft cloud services. Azure Networking is at the forefront of Hyperscale Cloud Computing and runs one of the largest datacenter network infrastructures in the world. With the explosion of artificial intelligence (AI), Microsoft has been at the forefront of developing and adopting AI technologies. Meeting the next waves of AI technologies requires new generations of network, and the Azure Networking team is tasked to design and build the next generation of AI networks.
+The Azure Networking team is looking for a Senior Software Engineer to help us in building the highest quality software to manage global scale AI networks.
+ 
+Microsoft’s mission is to empower every person and every organization on the planet to achieve more. As employees we come together with a growth mindset, innovate to empower others and collaborate to realize our shared goals. Each day we build on our values of respect, integrity, and accountability to create a culture of inclusion where everyone can thrive at work and beyond.","Required Qualifications:
+Bachelor's Degree in Computer Science or related technical field AND 4+ years technical engineering experience with coding in languages including, but not limited to, C, C++, C#, Java, JavaScript, or Python
+ OR equivalent experience
+2+ years of experience developing and managing infrastructure.
+1+ years of experience in incident response. 
+Other Requirements:
+ 
+Ability to meet Microsoft, customer and/or government security screening requirements are required for this role. These requirements include, but are not limited to the following specialized security screenings: 
+Microsoft Cloud Background Check: This position will be required to pass the Microsoft Cloud Background Check upon hire/transfer and every two years thereafter.
+ 
+Preferred Qualifications:
+Bachelor's Degree in Computer Science OR related technical field AND 8+ years technical engineering experience with coding in languages including, but not limited to, C, C++, C#, Java, JavaScript, OR Python.
+OR Master's Degree in Computer Science or related technical field AND 6+ years technical engineering experience with coding in languages including, but not limited to, C, C++, C#, Java, JavaScript, or Python
+OR equivalent experience.
+Knowledge of UNIX or Linux.
+Familiar with test automation tools and scripting languages.
+Knowledge with the networking areas: Ethernet, Vritual Local Area Networks (VLANs), Internet Protocol (IP) Routing, Transmission Control Protocol/Internet Protocol (TCP/IP), Border Gateway Protocol (BGP), Quality of Service (QoS), L2-L3 protocols, QOS, network congestion management, network management.
+ Proficient communication skills.
+ 
+#AZURECOREJOBS"," Collaborates with appropriate stakeholders to determine user requirements for a scenario.
+Drives identification of dependencies and the development of design documents for a product, application, service, or platform.
+Creates, implements, optimizes, debugs, refactors, and reuses code to establish and improve performance and maintainability, effectiveness, and return on investment (ROI).
+Leverages subject-matter expertise of product features and partners with appropriate stakeholders (e.g., project managers) to drive a workgroup's project plans, release plans, and work items.
+Acts as a Designated Responsible Individual (DRI) and guides other engineers by developing and following the playbook, working on call to monitor system/product/service for degradation, downtime, or interruptions, alerting stakeholders about status and initiates actions to restore system/product/service for simple and complex problems when appropriate.
+Proactively seeks new knowledge and adapts to new trends, technical solutions, and patterns that will improve the availability, reliability, efficiency, observability, and performance of products while also driving consistency in monitoring and operations at scale.
+ "

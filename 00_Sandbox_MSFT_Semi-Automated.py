@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import StaleElementReferenceException
 import time
 import pandas as pd
+import re
 
 # Function to get the full html code and urls for all the jobs 
 def get_job_sources(url):
@@ -253,8 +254,11 @@ def generate_summaries():
             # ChatGPT only generates a summary if the job description was updated or a new job was posted
             if(not df_summary.loc[df_summary['Job number'] == row['Job number'],
                               'Job_Description'].empty):
-                if(df_summary.loc[df_summary['Job number'] == row['Job number'],
-                                'Job_Description'].item() == row['Job_Description']):
+                df_summary_job_description_no_blanks = re.sub(r"\s+","",df_summary.loc[df_summary['Job number'] 
+                                                                                       == row['Job number'],
+                                                                                       'Job_Description'].item())
+                df_job_description_no_blanks = re.sub(r"\s+","",row["Job_Description"])
+                if(df_summary_job_description_no_blanks == df_job_description_no_blanks):
                     summary = df_summary.loc[df_summary['Job number'] == row['Job number'],
                                 'Job_AI_Summary'].item()
                     print(f"CSV {row['CSV']} already generated")
@@ -289,7 +293,7 @@ def format_text(text, headers):
     # For each line, strip whitespace, then check if it starts with any of the headers.
     # If not, and if the line is not empty, add "- " in front of it
     formatted_lines = [
-        line if any(line.strip().startswith(header) for header in headers) or line.strip() == "" else "- " + line for line in lines
+        line if any(line.upper().strip().startswith(header.upper()) for header in headers) or line.strip() == "" else "- " + line for line in lines
     ]
     
     # Join the formatted lines and return
@@ -368,7 +372,9 @@ if __name__ == "__main__":
 
     qual_headers = [
         "Required Qualifications",
-        "Preferred Qualifications"
+        "Preferred Qualifications",
+        "Required/Minimum Qualifications",
+        "Minimum Qualifications"
     ]
 
     # Apply the format_text function for Qualifications and Job_Description columns

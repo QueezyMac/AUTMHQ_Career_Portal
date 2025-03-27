@@ -286,8 +286,11 @@ def generate_summaries():
             # ChatGPT only generates a summary if the job description was updated or a new job was posted
             if(not df_summary.loc[df_summary['Job_Requisition_Number'] == row['Job_Requisition_Number'],
                               'Job_Description'].empty):
-                if(df_summary.loc[df_summary['Job_Requisition_Number'] == row['Job_Requisition_Number'],
-                                'Job_Description'].item() == row['Job_Description']):
+                df_summary_job_description_no_blanks = re.sub(r"\s+","",df_summary.loc[df_summary['Job_Requisition_Number'] 
+                                                                                       == row['Job_Requisition_Number'],
+                                                                                       'Job_Description'].item())
+                df_job_description_no_blanks = re.sub(r"\s+","",row["Job_Description"])
+                if(df_summary_job_description_no_blanks == df_job_description_no_blanks):
                     summary = df_summary.loc[df_summary['Job_Requisition_Number'] == row['Job_Requisition_Number'],
                                 'Job_AI_Summary'].item()
                     print(f"CSV {row['CSV']} already generated")
@@ -441,7 +444,7 @@ def calculate_salary(pay_range):
     try:
         # Input can be in UNPAID, per year, or per hour, so get everything to per hour first or if it is unpaid just return 0
         # for hourly pay rate and salary
-        pay_range = pay_range.replace("-", " - ").replace("/HOUR", " per hour")
+        pay_range = pay_range.replace("-", " - ").replace("/HOUR", " per hour").replace("/YEAR", " per year")
         pay_range = re.sub(r" {2,}", " ",pay_range)
         if(pay_range == "UNPAID"):
             return "${:,.2f} per hour".format(0), "${:,.2f} per year".format(0)
