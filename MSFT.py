@@ -10,6 +10,7 @@ import re
 
 # Function to get the full html code and urls for all the jobs 
 def get_job_sources(url):
+     driver = webdriver.Chrome()
      current_page_url = url
      # Open page
      driver.get(url)
@@ -49,6 +50,7 @@ def get_job_sources(url):
           except StaleElementReferenceException:
                print("Error: Stale element reference exception")
                jobs = driver.find_elements(By.XPATH, "//button[text() = 'See details']")
+     driver.quit()
      return page_sources, urls
 
 # Function to scrape a page on the job board to extract job information and store information in a CSV file
@@ -336,21 +338,22 @@ def calculate_hourly_pay(salary_range):
         return "${:.2f} – ${:.2f} per year".format(min_salary, max_salary), "${:.2f} – ${:.2f} per hour".format(hourly_low, hourly_high)
     except:
         return "DOE", "DOE"
-
-if __name__ == "__main__":
-    # Set up the OpenAI API key
+    
+def main():
+     # Set up the OpenAI API key
     api_key = os.getenv("api_key")
     openai.api_key = api_key
 
-    driver = webdriver.Chrome()
+     # Clear files in MSFT_JOBS folder besides ALL_JOBS_SUMMARY.csv
     for file in os.listdir("MSFT_JOBS"):
         if(file != "ALL_JOBS_SUMMARY.csv"):
             os.remove(os.path.join("MSFT_JOBS", file))
+
+     # Extract job information
     url = "https://jobs.careers.microsoft.com/global/en/search?lc=Austin%2C%20Texas%2C%20United%20States&l=en_us&pg=1&pgSz=20&o=Relevance&flt=true"
     [page_sources, urls] = get_job_sources(url)
     get_all_jobs_info(page_sources, urls)
     get_all_jobs_info_csv()
-    driver.quit()
 
     # Call the generate_summaries function
     generate_summaries()
@@ -467,3 +470,6 @@ if __name__ == "__main__":
 
 
     print(f"CSV saved to {output_file}")
+
+if __name__ == "__main__":
+    main()
