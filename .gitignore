@@ -1,6 +1,8 @@
 /Job Posts by URL
 /MSFT_JOBS
+/EMERSON_JOBS
 .env
 MSFT_Web_Scraping.py
 __pycache__/CityofAustin.cpython-312.pyc
 __pycache__/MSFT.cpython-312.pyc
+Emerson_Web_Scraping.py

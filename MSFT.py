@@ -14,10 +14,6 @@ def get_job_sources(url):
      current_page_url = url
      # Open page
      driver.get(url)
-     # Microsoft job board uses cookies, so ensure the parts that use cookies are in the extracted code
-     cookies_dict = driver.get_cookies()
-     for cookie_dict in cookies_dict:
-          driver.add_cookie(cookie_dict)
      # Sleep for 10 seconds to ensure page has fully loaded
      time.sleep(10)
      # Find all the buttons to the full job details on the page
@@ -343,6 +339,10 @@ def main():
      # Set up the OpenAI API key
     api_key = os.getenv("api_key")
     openai.api_key = api_key
+
+     # Create MSFT_JOBS directory if it does not exist already
+    if(not os.path.exists("MSFT_JOBS")):
+         os.makedirs("MSFT_JOBS")
 
      # Clear files in MSFT_JOBS folder besides ALL_JOBS_SUMMARY.csv
     for file in os.listdir("MSFT_JOBS"):
