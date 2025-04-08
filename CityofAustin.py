@@ -122,12 +122,11 @@ def generate_summaries():
     print("Job_AI_Summary\n")
 
     # Loop through the Job Descriptions and update the Job_AI_Summary column
+    # ChatGPT only generates a summary if the job description was updated or a new job was posted
     if(os.path.exists(summary_csv_path)):
         df_summary = pd.read_csv(summary_csv_path)
         for index, row in df.iterrows():
-            # ChatGPT only generates a summary if the job description was updated or a new job was posted
-            if(not df_summary.loc[df_summary['Job_Requisition_Number'] == row['Job_Requisition_Number'],
-                              'Job_Description'].empty):
+            try:
                 df_summary_job_description_no_blanks = re.sub(r"\s+","",df_summary.loc[df_summary['Job_Requisition_Number'] 
                                                                                        == row['Job_Requisition_Number'],
                                                                                        'Job_Description'].item())
@@ -138,7 +137,7 @@ def generate_summaries():
                     print(f"CSV {row['CSV']} already generated")
                 else:
                     summary = prompt_openai(row['Job_Description'])
-            else:
+            except ValueError:
                 summary = prompt_openai(row['Job_Description'])
             df.at[index, 'Job_AI_Summary'] = summary
             print(f"CSV {row['CSV']} : {summary}\n")
@@ -477,7 +476,7 @@ def main():
         "Created Date", "Job Title", "Job Requisition Number", "Job_AI_Summary", "Link to Apply", "Compensation", "Expected Salary",
         "Job Open Date", "Job Close Date", "Company or Organization", "Company Logo", "Business Unit / Division", 
         "Job Category", "Qualifications", "Position Description", "Location", 
-        "Job Type (Full, Part, Intern)", "AUTMHQ Job Boar... (Job Title, Comp...)", "View Position", "Status", "Sort Order",  
+        "Job Type (Full, Part, Intern, Co-op)", "AUTMHQ Job Boar... (Job Title, Comp...)", "View Position", "Status", "Sort Order",  
         "ID", "Email Application Materials To:", "Job Level", "AUTMHQ Training Cohort", "Owner", "Updated Date"
     ]
     df_output = pd.DataFrame(columns=headers)
@@ -492,7 +491,7 @@ def main():
     df_output["Job Requisition Number"] = df_input["Job_Requisition_Number"]
     df_output["Job_AI_Summary"] = df_input["Job_AI_Summary"]
     df_output["Link to Apply"] = df_input["URL"]
-    df_output["Job Type (Full, Part, Intern)"] = df_input["Job_Type"]
+    df_output["Job Type (Full, Part, Intern, Co-op)"] = df_input["Job_Type"]
     df_output["Compensation"] = df_input["Pay_Range"]
     df_output["Job Open Date"] = df_input["Job_Open_Date"]  #Caldulated
     df_output["Job Close Date"] = df_input["Job_Close_Date"]

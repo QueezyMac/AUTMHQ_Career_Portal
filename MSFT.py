@@ -28,7 +28,7 @@ def get_job_sources(url):
                if(i==len(jobs) and next_page):
                     next_page = driver.find_elements(By.XPATH, "//button[@aria-label = 'Go to next page']")
                     next_page[0].click()
-                    time.sleep(5)
+                    time.sleep(10)
                     current_page_url = driver.current_url
                     jobs = driver.find_elements(By.XPATH, "//button[text() = 'See details']")
                     i=0
@@ -37,11 +37,11 @@ def get_job_sources(url):
 
                else:
                     jobs[i].click()
-                    time.sleep(5)
+                    time.sleep(10)
                     page_sources.append(driver.page_source)
                     urls.append(driver.current_url)
                     driver.get(current_page_url)
-                    time.sleep(5)
+                    time.sleep(10)
                     i+=1
           except StaleElementReferenceException:
                print("Error: Stale element reference exception")
@@ -70,7 +70,7 @@ def get_job_info(html_source, url, file_number, directory="MSFT_JOBS"):
      # Extract main body of job information
      main_body_html = soup.select("div.ms-DocumentCard.SearchJobDetailsCard div.fcUffXZZoGt8CJQd8GUl>div")
      # Ensure text in tags are formatted correctly and store each section of the main body in a main body list
-     # To ensure text is formatted correctly remove the span, strong, a, b, i, and sup tags before storing in the list
+     # To ensure text is formatted correctly remove the span, strong, a, b, i, sup, and sub tags before storing in the list
      main_body = []
      for tags in main_body_html:
           remove_tags = tags.find_all("span")
@@ -96,6 +96,10 @@ def get_job_info(html_source, url, file_number, directory="MSFT_JOBS"):
           remove_tags = tags.find_all("sup")
           for sup_tag in remove_tags:
                sup_tag.unwrap()
+
+          remove_tags = tags.find_all("sub")
+          for sub_tag in remove_tags:
+               sub_tag.unwrap()
 
           tags = BeautifulSoup(str(tags),"html.parser")
           main_body.append(tags.get_text("\n"))
@@ -246,12 +250,11 @@ def generate_summaries():
     print("Job_AI_Summary\n")
 
     # Loop through the Job Descriptions and update the Job_AI_Summary column
+    # ChatGPT only generates a summary if the job description was updated or a new job was posted
     if(os.path.exists(summary_csv_path)):
         df_summary = pd.read_csv(summary_csv_path)
         for index, row in df.iterrows():
-            # ChatGPT only generates a summary if the job description was updated or a new job was posted
-            if(not df_summary.loc[df_summary['Job number'] == row['Job number'],
-                              'Job_Description'].empty):
+            try:
                 df_summary_job_description_no_blanks = re.sub(r"\s+","",df_summary.loc[df_summary['Job number'] 
                                                                                        == row['Job number'],
                                                                                        'Job_Description'].item())
@@ -262,7 +265,7 @@ def generate_summaries():
                     print(f"CSV {row['CSV']} already generated")
                 else:
                     summary = prompt_openai(row['Job_Description'])
-            else:
+            except ValueError:
                 summary = prompt_openai(row['Job_Description'])
             df.at[index, 'Job_AI_Summary'] = summary
             print(f"CSV {row['CSV']} : {summary}\n")
@@ -331,7 +334,7 @@ def calculate_hourly_pay(salary_range):
              hourly_high = max_salary
              min_salary = min_salary*40*52
              max_salary = max_salary*40*52
-        return "${:.2f} – ${:.2f} per year".format(min_salary, max_salary), "${:.2f} – ${:.2f} per hour".format(hourly_low, hourly_high)
+        return "${:,.2f} – ${:,.2f} per year".format(min_salary, max_salary), "${:.2f} – ${:.2f} per hour".format(hourly_low, hourly_high)
     except:
         return "DOE", "DOE"
     
@@ -439,7 +442,7 @@ def main():
         "Created Date", "Job Title", "Job Requisition Number", "Job_AI_Summary", "Link to Apply", "Compensation", "Expected Salary",
         "Job Open Date", "Job Close Date", "Company or Organization", "Company Logo", "Business Unit / Division", 
         "Job Category", "Qualifications", "Position Description", "Location", 
-        "Job Type (Full, Part, Intern)", "AUTMHQ Job Boar... (Job Title, Comp...)", "View Position", "Status", "Sort Order",  
+        "Job Type (Full, Part, Intern, Co-op)", "AUTMHQ Job Boar... (Job Title, Comp...)", "View Position", "Status", "Sort Order",  
         "ID", "Email Application Materials To:", "Job Level", "AUTMHQ Training Cohort", "Owner", "Updated Date"
     ]
     df_output = pd.DataFrame(columns=headers)
@@ -453,7 +456,7 @@ def main():
     df_output["Job_AI_Summary"] = df_input["Job_AI_Summary"]
     df_output["Job Requisition Number"] = df_input["Job number"]
     df_output["Link to Apply"] = df_input["URL"]
-    df_output["Job Type (Full, Part, Intern)"] = df_input["Employment type"]
+    df_output["Job Type (Full, Part, Intern, Co-op)"] = df_input["Employment type"]
     df_output["Compensation"] = df_input["Pay_Range"]
     df_output["Job Open Date"] = df_input["Date posted"]
     df_output["Job Close Date"] = df_input["Closing Date"]
