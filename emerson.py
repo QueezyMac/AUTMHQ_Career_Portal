@@ -176,18 +176,19 @@ def get_job_info(page_source, url, file_number, directory="EMERSON_JOBS"):
                               "Key Responsibilities", "Primary Responsibilities", "Responsibilities"],
                              ["Who You Are", "This job might be for you if", "For This Role, You Will Need",
                               "For This Role You Will Need", "Required Qualifications","Requirements",
-                              "Qualifications", "Our Culture & Commitment to You"]),
+                              "Qualifications", "Minimum Requirements", "Our Culture & Commitment to You"]),
         "Required Qualifications": (["For This Role, You Will Need", "The following skills and experience are required",
                                      "For This Role You Will Need", "Key Skills and Competencies",
-                                     "Required Qualifications", "Required Qualification", "Requirements", "Qualifications"],
-                                    ["Preferred Qualifications that Set You Apart", "Preferred Qualifications", "Expectations",
-                                     "Who You Are", "This job might be for you if", "Our Offer To You",
+                                     "Required Qualifications", "Required Qualification", "Requirements", "Minimum Requirements",
+                                     "Qualifications"],
+                                    ["Preferred Qualifications that Set You Apart", "Preferred Qualifications", "Preferred Skills",
+                                     "Expectations","Who You Are", "This job might be for you if", "Our Offer To You",
                                      "Our Culture & Commitment to You"]),
-        "Preferred Qualifications": (["Preferred Qualifications that Set You Apart", "Preferred Qualifications"],
-                                     ["Who You Are", "This job might be for you if", "Our Culture & Commitment to You",
-                                      "Our Offer To You", "At Emerson"]),
+        "Preferred Qualifications": (["Preferred Qualifications that Set You Apart", "Preferred Qualifications", "Preferred Skills"],
+                                     ["Who You Are", "This job might be for you if", "Demonstrated ability to",
+                                      "Our Culture & Commitment to You", "Our Offer To You", "At Emerson"]),
         "Expectations": (["Expectations"], ["Our Culture & Commitment to You"]),
-        "Who You Are": (["Who You Are", "This job might be for you if"],
+        "Who You Are": (["Who You Are", "This job might be for you if", "Demonstrated ability to"],
                         ["For This Role, You Will Need", "For This Role You Will Need",
                          "The following skills and experience are required", "Our Culture & Commitment to You"])
     }
@@ -529,8 +530,8 @@ def main():
 
     # Ensure "Posting Date" and "Apply Before" is in datetime format
     if 'Posting Date' and 'Apply Before' in df.columns:
-        df['Posting Date'] = pd.to_datetime(df['Posting Date'])
-        df['Apply Before'] = pd.to_datetime(df['Apply Before'])
+        df['Posting Date'] = pd.to_datetime(df['Posting Date'], format="%m/%d/%Y, %H:%M %p")
+        df['Apply Before'] = pd.to_datetime(df['Apply Before'], format="%m/%d/%Y, %H:%M %p")
 
     # Apply the calculate_hourly_pay function to the Salary Range column to create the Pay Range column
     df["Pay_Range"] = ""

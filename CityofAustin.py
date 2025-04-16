@@ -198,17 +198,19 @@ def calculate_salary(pay_range):
     try:
         # Input can be in UNPAID, per year, or per hour, so get everything to per hour first or if it is unpaid just return 0
         # for hourly pay rate and salary
-        pay_range = pay_range.replace("-", " - ").replace("/HOUR", " per hour").replace("/YEAR", " per year")
+        pay_range = pay_range.replace("$ ","$").replace("-", " - ").replace("/HOUR", " per hour").replace("/YEAR", " per year")
         pay_range = re.sub(r" {2,}", " ",pay_range)
         if(pay_range == "UNPAID"):
             return "${:,.2f} per hour".format(0), "${:,.2f} per year".format(0)
         elif(("per year" in pay_range) or ("annually" in pay_range)):
-            pay_list = [int(val.replace("$", "").replace(",","").strip()) for val in pay_range.split()
+            pay_list = [int(val.replace("$","").replace(",","").strip()) for val in pay_range.split()
                                 if (("$" in val) or (is_int(val)))][:2]
             pay_list = [salary/2080 for salary in pay_list]
         else:
             pay_list = [float(val.replace("$", "").strip()) for val in pay_range.split() 
-                                if (("$" in val) or (is_float(val) and len(val)==5))][:2]
+                                if (("$" in val) and (is_float(val.replace("$", "").strip()) 
+                                                      and len(val.replace("$", "").strip())==5)) or
+                                  ((is_float(val) and len(val)==5))][:2]
         
         # Sometimes the pay is just a single number and not a range, so these if statements allow the pay to be extracted correctly
         if(len(pay_list)==2):
@@ -223,7 +225,7 @@ def calculate_salary(pay_range):
         else:
             return "DOE","DOE"
     except Exception as e:
-        print(e)
+        print(f"Error: {e}")
         return "DOE","DOE"
 
 def main():
@@ -427,7 +429,7 @@ def main():
     df['Job_Close_Date'] = pd.to_datetime(df['Job_Close_Date'], errors='coerce')
 
     # Handle NaT values by replacing them with a blank
-    df['Job_Close_Date'].fillna("", inplace=True)
+    df.fillna({"Job_Close_Date":""}, inplace=True)
 
     # Job open date is unavailable as it is not on their website
     df['Job_Open_Date'] = ""
