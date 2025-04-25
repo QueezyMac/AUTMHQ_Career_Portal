@@ -330,7 +330,7 @@ def get_all_jobs_csv(directory="EMERSON_JOBS"):
 
     # Organize columns
     column_list = ["URL","CSV","Job Title","Location","Posting Date","Apply Before","Job Identification",
-                   "Business Unit / Division", "Job Category","Job Schedule","Qualifications","Job Description",
+                   "Business Unit / Division", "Job Function","Job Schedule","Qualifications","Job Description",
                    "Salary"]
     for column in column_list:
         if(not(column in jobs_info.columns)):
@@ -596,7 +596,7 @@ def main():
     df_output["Job Close Date"] = df_input["Apply Before"]
     df_output["Company or Organization"] = "Emerson"
     df_output["Business Unit / Division"] = df_input["Business Unit / Division"]
-    df_output["Job Category"] = df_input["Job Category"]
+    df_output["Job Category"] = df_input["Job Function"]
     df_output["Qualifications"] = df_input["Qualifications_2"]
     df_output["Position Description"] = df_input["Job_Description_2"]
     df_output["Location"] = df_input["Location"]
