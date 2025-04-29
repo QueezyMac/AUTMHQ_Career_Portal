@@ -28,18 +28,20 @@ def extract_data_from_text(content, file_number):
         "Pay_Range": ("\n Pay Range", "\n Hours "),
         "Hours": ("\n Hours", "\n Job Close Date"),      
         "Job_Close_Date": ("\n Job Close Date", "\n Type of Posting"),
+        "Posting_Type": ("\n Type of Posting", "\n Department "),
         "Department": ("\n Department", "\n Regular/Temporary"),
         "Category": ("\n Category", "\n Location"),
         "Location": ("\n Location", "\n Preferred Qualifications"),
         "Duties_Functions_and_Responsibilities": ("\n Duties, Functions and Responsibilities ", "\n Knowledge, Skills and Abilities"),
         "Knowledge_Skills_and_Abilities": ("\n Knowledge, Skills and Abilities", "\n Criminal Background Investigation")
-    }
+    } 
 
     # Extract text based on markers
     extracted_data = {}
+    end_index = 0
     for variable, (start_marker, end_marker) in markers.items():
-        start_index = content.find(start_marker) + len(start_marker)
-        end_index = content.find(end_marker)
+        start_index = content.find(start_marker,end_index) + len(start_marker)
+        end_index = content.find(end_marker,start_index)
         extracted_data[variable] = content[start_index:end_index].strip()
 
     # Add URL and file number (formatted with a leading apostrophe) to the extracted data
@@ -298,6 +300,7 @@ def main():
             "Pay_Range",
             "Hours",
             "Job_Close_Date",
+            "Posting_Type",
             "Department",
             "Category",
             "Location",
@@ -398,7 +401,6 @@ def main():
         "Licenses and Certifications Required:",
         "Licenses or Certifications:",
         "Preferred Qualifications:",
-        "Preferred Experience",
         "Preferred Skills:",
         "Other:"
     ]
