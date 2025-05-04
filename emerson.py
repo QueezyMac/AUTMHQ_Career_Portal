@@ -168,29 +168,35 @@ def get_job_info(page_source, url, file_number, directory="EMERSON_JOBS"):
     markers = {
         "Overview": (["Position Overview", "Summary", "Job Summary", "Objective of Role", "Job Description"],
                      ["Organization", "In this Role, Your Responsibilities Will Be", "In This Role, Your Responsibilities Will",
-                      "Key Responsibilities", "Primary Responsibilities", "Responsibilities", "Key Skills and Competencies"]),
+                      "Key Responsibilities", "Primary Responsibilities", "Responsibilities", "Key Skills and Competencies",
+                      "Core Job Responsibilities","Core Responsibilities","For This Role, You Will Need"]),
         "Organization": (["Organization"],["In this Role, Your Responsibilities Will Be",
                                            "In this Role, Your Responsibilities Will", "Key Responsibilities",
                                            "Primary Responsibilities", "Responsibilities"]),
         "Responsibilities": (["In this Role, Your Responsibilities Will Be","In this Role, Your Responsibilities Will",
-                              "Key Responsibilities", "Primary Responsibilities", "Responsibilities"],
-                             ["Who You Are", "This job might be for you if", "For This Role, You Will Need",
-                              "For This Role You Will Need", "Required Qualifications","Requirements",
-                              "Qualifications", "Minimum Requirements", "Our Culture & Commitment to You"]),
-        "Required Qualifications": (["For This Role, You Will Need", "The following skills and experience are required",
-                                     "For This Role You Will Need", "Key Skills and Competencies",
-                                     "Required Qualifications", "Required Qualification", "Requirements", "Minimum Requirements",
-                                     "Qualifications"],
+                              "Key Responsibilities", "Primary Responsibilities", "Responsibilities", "Core Job Responsibilities",
+                              "Core Responsibilities"],
+                             ["Who You Are", "This job might be for you if", "For This Role, You Will Need", "For This Role, Will Need",
+                              "For This Role You Will Need", "Required Qualifications", "Required Qualification", "Requirements",
+                              "Basic Requirements", "Qualifications", "Minimum Requirements", "Skills", "Expectations",
+                              "Our Culture & Commitment to You"]),
+        "Required Qualifications": (["For This Role, You Will Need", "For This Role, Will Need",
+                                     "The following skills and experience are required", "For This Role You Will Need",
+                                     "Key Skills and Competencies", "Required Qualifications", "Required Qualification",
+                                     "Requirements", "Basic Requirements", "Minimum Requirements", "Qualifications"],
                                     ["Preferred Qualifications that Set You Apart", "Preferred Qualifications", "Preferred Skills",
-                                     "Expectations","Who You Are", "This job might be for you if", "Our Offer To You",
-                                     "Our Culture & Commitment to You"]),
-        "Preferred Qualifications": (["Preferred Qualifications that Set You Apart", "Preferred Qualifications", "Preferred Skills"],
+                                     "Preferred Requirements","Expectations","Who You Are", "This job might be for you if",
+                                     "Demonstrated ability to", "Our Offer To You", "Our Culture & Commitment to You"]),
+        "Skills": (["Skills"],["Demonstrated ability to"]),
+        "Preferred Qualifications": (["Preferred Qualifications that Set You Apart", "Preferred Qualifications", "Preferred Skills",
+                                      "Preferred Requirements"],
                                      ["Who You Are", "This job might be for you if", "Demonstrated ability to",
-                                      "Our Culture & Commitment to You", "Our Offer To You", "At Emerson"]),
+                                      "Our Culture & Commitment to You", "Our Offer To You", "Our Perks", "At Emerson"]),
         "Expectations": (["Expectations"], ["Our Culture & Commitment to You"]),
         "Who You Are": (["Who You Are", "This job might be for you if", "Demonstrated ability to"],
-                        ["For This Role, You Will Need", "For This Role You Will Need",
-                         "The following skills and experience are required", "Our Culture & Commitment to You"])
+                        ["For This Role, You Will Need", "For This Role You Will Need", "Basic Requirements",
+                         "The following skills and experience are required", "Qualifications",
+                         "Our Culture & Commitment to You"])
     }
 
     # Iterate through markers dictionary to extract the overview, resposibilities, required qualifications,
@@ -303,6 +309,7 @@ def get_all_jobs_csv(directory="EMERSON_JOBS"):
     # Loop through the rows in the dataframe to add the qualifications and job description
     for (index, data) in jobs_info.iterrows():
         qualification_categories_exist = {"Required Qualifications": not(pd.isna(data["Required Qualifications"])),
+                                          "Skills": not(pd.isna(data["Skills"])),
                                           "Preferred Qualifications": not(pd.isna(data["Preferred Qualifications"])),
                                           "Expectations": not(pd.isna(data["Expectations"])),
                                           "Who You Are": not(pd.isna(data["Who You Are"]))}
@@ -503,6 +510,7 @@ def main():
     qual_headers = [
         "Required Qualifications:",
         "Preferred Qualifications:",
+        "Skills:",
         "Expectations:",
         "Who You Are:"
     ]
