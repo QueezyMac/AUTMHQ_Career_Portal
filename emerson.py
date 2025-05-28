@@ -110,7 +110,7 @@ def get_job_info(page_source, url, file_number, directory="EMERSON_JOBS"):
     # Job schedule tells the Job type (Full, Part, Intern, Co-op)
     # Therefore, update job type to intern or co-op if it should be that
     if("intern" in job_info["Job Title"].lower()):
-        job_info["Job Schedule"] = "Intern"
+        job_info["Job Schedule"] = "Internship"
     elif("co-op" in job_info["Job Title"].lower()):
         job_info["Job Schedule"] = "Co-op"
     
@@ -536,10 +536,12 @@ def main():
     # Load the CSV file into a DataFrame
     df = pd.read_csv(input_file, encoding='utf-8-sig')
 
-    # Ensure "Posting Date" and "Apply Before" is in datetime format
+    # Ensure "Posting Date" and "Apply Before" is in YYYY-MM-DD format
     if 'Posting Date' and 'Apply Before' in df.columns:
         df['Posting Date'] = pd.to_datetime(df['Posting Date'], format="%m/%d/%Y, %H:%M %p")
+        df['Posting Date'] = df['Posting Date'].dt.strftime("%Y-%m-%d")
         df['Apply Before'] = pd.to_datetime(df['Apply Before'], format="%m/%d/%Y, %H:%M %p")
+        df['Apply Before'] = df['Apply Before'].dt.strftime("%Y-%m-%d")
 
     # Apply the calculate_hourly_pay function to the Salary Range column to create the Pay Range column
     df["Pay_Range"] = ""
@@ -604,7 +606,7 @@ def main():
     df_output["Job Close Date"] = df_input["Apply Before"]
     df_output["Company or Organization"] = "Emerson"
     df_output["Business Unit / Division"] = df_input["Business Unit / Division"]
-    df_output["Job Category"] = df_input["Job Function"]
+    df_output["Job Category"] = "Emerson"
     df_output["Qualifications"] = df_input["Qualifications_2"]
     df_output["Position Description"] = df_input["Job_Description_2"]
     df_output["Location"] = df_input["Location"]

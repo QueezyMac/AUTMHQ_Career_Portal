@@ -142,6 +142,11 @@ def get_job_info(html_source, url, file_number, directory="MSFT_JOBS"):
                job_info["Responsibilities"] = "Error getting job responsibilities"
                job_info["Qualifications"] = "Error getting qualifications for the job"
                break
+
+     # Make employment type one of the options on the career site
+     if(job_info["Employment type"].lower() == "full-time"):
+          job_info["Employment type"] = "Full time"
+
      # Store Job information in a CSV file
      job_info_df = pd.DataFrame([job_info])
      path = os.path.join(directory, "{:03}.csv".format(file_number))
@@ -401,9 +406,16 @@ def main():
 
     # Convert date posted and date closed to datetime objects
     if ('Date posted' in df.columns):
-        df['Date posted'] = pd.to_datetime(df['Date posted']).fillna("")
-    if('Closing date' in df.columns):
-        df['Closing date'] = pd.to_datetime(df['Closing date']).fillna("")
+        df['Date posted'] = pd.to_datetime(df['Date posted'], format="%b %d, %Y").fillna("")
+        # Format 'Date posted' as date strings in YYYY-MM-DD format
+        df['Date posted'] = df['Date posted'].dt.strftime('%Y-%m-%d').fillna("")
+    if('Closing Date' in df.columns):
+        for (index, data) in df.iterrows():
+          if(not(pd.isna(data["Closing Date"]))):
+               df.at[index, 'Closing Date'] = re.sub(r'(\d+)(st|nd|rd|th)', r'\1', data['Closing Date'])
+        df['Closing Date'] = pd.to_datetime(df['Closing Date'], format="%B %d, %Y").fillna("")
+        # Format 'Closing date' as date strings in YYYY-MM-DD format
+        df['Closing Date'] = df['Closing Date'].dt.strftime('%Y-%m-%d').fillna("")
 
     # Apply the calculate_hourly_pay function to the Salary Range column to create the Pay Range column
     df["Pay_Range"] = ""
@@ -462,7 +474,7 @@ def main():
     df_output["Job Close Date"] = df_input["Closing Date"]
     df_output["Company or Organization"] = "Microsoft"
     df_output["Business Unit / Division"] = df_input["Profession"]
-    df_output["Job Category"] = df_input["Discipline"]
+    df_output["Job Category"] = "Microsoft"
     df_output["Location"] = df_input["Location"]
     df_output["Qualifications"] = df_input["Qualifications_2"]
     df_output["Position Description"] = df_input["Job_Description_2"]

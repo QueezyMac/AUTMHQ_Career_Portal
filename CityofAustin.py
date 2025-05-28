@@ -24,7 +24,6 @@ def extract_data_from_text(content, file_number):
         "Job_Type": ("\n Job Type", "\n Division Name"),
         "Division_Name": ("\n Division Name", "\n Minimum Qualifications"),
         "Minimum_Qualifications": ("\n Minimum Qualifications", "\n Notes to Applicants"),
-        "Preferred_Qualifications": ("\n Preferred Qualifications", "\n Duties, Functions and Responsibilities"),
         "Pay_Range": ("\n Pay Range", "\n Hours "),
         "Hours": ("\n Hours", "\n Job Close Date"),      
         "Job_Close_Date": ("\n Job Close Date", "\n Type of Posting"),
@@ -32,6 +31,7 @@ def extract_data_from_text(content, file_number):
         "Department": ("\n Department", "\n Regular/Temporary"),
         "Category": ("\n Category", "\n Location"),
         "Location": ("\n Location", "\n Preferred Qualifications"),
+        "Preferred_Qualifications": ("\n Preferred Qualifications", "\n Duties, Functions and Responsibilities"),
         "Duties_Functions_and_Responsibilities": ("\n Duties, Functions and Responsibilities ", "\n Knowledge, Skills and Abilities"),
         "Knowledge_Skills_and_Abilities": ("\n Knowledge, Skills and Abilities", "\n Criminal Background Investigation")
     } 
@@ -44,6 +44,13 @@ def extract_data_from_text(content, file_number):
         end_index = content.find(end_marker,start_index)
         extracted_data[variable] = content[start_index:end_index].strip()
 
+    # Fix the formatting of the job type
+    if(extracted_data["Job_Type"]) == "Full-Time":
+        extracted_data["Job_Type"] = "Full time"
+    
+    elif(extracted_data["Job_Type"] == "Part-Time"):
+        extracted_data["Job_Type"] = "Part time"
+        
     # Add URL and file number (formatted with a leading apostrophe) to the extracted data
     extracted_data["URL"] = url
     extracted_data["CSV"] = "'" + file_number  # Prepend an apostrophe to the file number
@@ -501,7 +508,7 @@ def main():
     df_output["Job Close Date"] = df_input["Job_Close_Date"]
     df_output["Company or Organization"] = "City of Austin"
     df_output["Business Unit / Division"] = df_input["Department"]
-    df_output["Job Category"] = df_input["Category"]
+    df_output["Job Category"] = "City of Austin"
     df_output["Location"] = "Austin, Texas, United States"
     df_output["Qualifications"] = df_input["Qualifications_2"]
     df_output["Position Description"] = df_input["Job_Description_2"]
