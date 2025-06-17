@@ -583,10 +583,10 @@ def main():
 
     # Create a new DataFrame for the output file with all the specified headers
     headers = [
-        "Created Date", "Job Title", "Job Requisition Number", "Job_AI_Summary", "Link to Apply", "Compensation", "Expected Salary",
-        "Job Open Date", "Job Close Date", "Company or Organization", "Company Logo", "Business Unit / Division", 
-        "Job Category", "Qualifications", "Position Description", "Location", 
-        "Job Type (Full, Part, Intern, Co-op)", "AUTMHQ Job Boar... (Job Title, Comp...)", "View Position", "Status", "Sort Order",  
+        "Created Date", "Title", "Job Requisition Number", "Job Summary", "Link to Apply", "Compensation", "Salary",
+        "Job Open Date", "Job Close Date", "User", "Company Logo", "Business Unit / Division", 
+        "Categories", "Qualifications", "Job Description", "Location", 
+        "Type", "AUTMHQ Job Boar... (Job Title, Comp...)", "View Position", "Status", "Sort Order",  
         "ID", "Email Application Materials To:", "Job Level", "AUTMHQ Training Cohort", "Owner", "Updated Date"
     ]
     df_output = pd.DataFrame(columns=headers)
@@ -597,20 +597,20 @@ def main():
 
     # Map the input columns to the output columns
     df_output["Job Title"] = df_input["Job Title"]
-    df_output["Job_AI_Summary"] = df_input["Job_AI_Summary"]
+    df_output["Job Summary"] = df_input["Job_AI_Summary"]
     df_output["Job Requisition Number"] = df_input["Job Identification"]
     df_output["Link to Apply"] = df_input["URL"]
-    df_output["Job Type (Full, Part, Intern, Co-op)"] = df_input["Job Schedule"]
+    df_output["Type"] = df_input["Job Schedule"]
     df_output["Compensation"] = df_input["Pay_Range"]
     df_output["Job Open Date"] = df_input["Posting Date"]
     df_output["Job Close Date"] = df_input["Apply Before"]
-    df_output["Company or Organization"] = "Emerson"
+    df_output["User"] = "Emerson"
     df_output["Business Unit / Division"] = df_input["Business Unit / Division"]
-    df_output["Job Category"] = "Emerson"
+    df_output["Categories"] = "Emerson"
     df_output["Qualifications"] = df_input["Qualifications_2"]
-    df_output["Position Description"] = df_input["Job_Description_2"]
+    df_output["Job Description"] = df_input["Job_Description_2"]
     df_output["Location"] = df_input["Location"]
-    df_output["Expected Salary"] = df_input["Salary"]
+    df_output["Salary"] = df_input["Salary"]
 
     # Save the output DataFrame with all the headers to the specified output file
     df_output.to_csv(output_file, index=False, encoding='utf-8-sig')

@@ -245,7 +245,7 @@ def main():
     # Create a directory to save the job posts if it doesn't exist
     output_directory = "Job Posts by URL"
     # RSS Feed URL
-    rss_feed = "https://www.austincityjobs.org/postings/all_jobs.atom"
+    rss_feed = "https://www.austincityjobs.org/postings/search.atom?utf8=%E2%9C%93&query=&query_v0_posted_at_date=&648%5B%5D=3&648%5B%5D=5&commit=Search"
 
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
@@ -484,10 +484,10 @@ def main():
 
     # Create a new DataFrame for the output file with all the specified headers
     headers = [
-        "Created Date", "Job Title", "Job Requisition Number", "Job_AI_Summary", "Link to Apply", "Compensation", "Expected Salary",
-        "Job Open Date", "Job Close Date", "Company or Organization", "Company Logo", "Business Unit / Division", 
-        "Job Category", "Qualifications", "Position Description", "Location", 
-        "Job Type (Full, Part, Intern, Co-op)", "AUTMHQ Job Boar... (Job Title, Comp...)", "View Position", "Status", "Sort Order",  
+        "Created Date", "Title", "Job Requisition Number", "Job Summary", "Link to Apply", "Compensation", "Salary",
+        "Job Open Date", "Job Close Date", "User", "Company Logo", "Business Unit / Division", 
+        "Categories", "Qualifications", "Job Description", "Location", 
+        "Type", "AUTMHQ Job Boar... (Job Title, Comp...)", "View Position", "Status", "Sort Order",  
         "ID", "Email Application Materials To:", "Job Level", "AUTMHQ Training Cohort", "Owner", "Updated Date"
     ]
     df_output = pd.DataFrame(columns=headers)
@@ -497,24 +497,23 @@ def main():
         df_output[header] = pd.Series([None] * len(df_input))
 
     # Map the input columns to the output columns
-    df_output["Job Title"] = df_input["Posting_Title"]
-    df_output["Job_AI_Summary"] = df_input["Job_AI_Summary"]
+    df_output["Title"] = df_input["Posting_Title"]
+    df_output["Job Summary"] = df_input["Job_AI_Summary"]
     df_output["Job Requisition Number"] = df_input["Job_Requisition_Number"]
-    df_output["Job_AI_Summary"] = df_input["Job_AI_Summary"]
     df_output["Link to Apply"] = df_input["URL"]
-    df_output["Job Type (Full, Part, Intern, Co-op)"] = df_input["Job_Type"]
+    df_output["Type"] = df_input["Job_Type"]
     df_output["Compensation"] = df_input["Pay_Range"]
-    df_output["Job Open Date"] = df_input["Job_Open_Date"]  #Caldulated
+    df_output["Job Open Date"] = df_input["Job_Open_Date"]  
     df_output["Job Close Date"] = df_input["Job_Close_Date"]
-    df_output["Company or Organization"] = "City of Austin"
+    df_output["User"] = "City of Austin"
     df_output["Business Unit / Division"] = df_input["Department"]
-    df_output["Job Category"] = "City of Austin"
+    df_output["Categories"] = "City of Austin"
     df_output["Location"] = "Austin, Texas, United States"
     df_output["Qualifications"] = df_input["Qualifications_2"]
-    df_output["Position Description"] = df_input["Job_Description_2"]
-    df_output["Expected Salary"] = df_input["Salary"]
+    df_output["Job Description"] = df_input["Job_Description_2"]
+    df_output["Salary"] = df_input["Salary"]
 
-    # Explicitly convert 'Job_Close_Date' to dates in YYYY-MM-DD format
+    # Explicitly convert 'Job Close Date' to dates in YYYY-MM-DD format
     df_output["Job Close Date"] = pd.to_datetime(df_input["Job_Close_Date"]).dt.date
 
     # Save the output DataFrame with all the headers to the specified output file
