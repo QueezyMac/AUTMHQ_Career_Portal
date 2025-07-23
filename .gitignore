@@ -1,0 +1,8 @@
+/Job Posts by URL
+/MSFT_JOBS
+/EMERSON_JOBS
+.env
+MSFT_Web_Scraping.py
+Emerson_Web_Scraping.py
+/__pycache__
+/JOBS_FROM_ALL_COMPANIES
